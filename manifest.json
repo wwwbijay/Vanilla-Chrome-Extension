@@ -10,23 +10,30 @@
         "128": "icons/128.png"
     },
     "background": {
-        "service_worker": "service-worker.js"
+        "service_worker": "./service-worker.js",
+        "persistant": "true"
     },
     "action": {
-        "default_popup": "popup/popup.html"
+        "default_icon": {
+            "16": "./icons/16.png",
+            "32": "./icons/32.png"
+        },
+        "default_title": "Boom Console",
+        "default_popup": "./popup/popup-login.html"
     },
     "permissions": [
         "scripting",
-        "activeTab"
+        "activeTab",
+        "storage"
     ],
+    "options_page": "./options/options.html",
     "content_scripts": [
         {
-            "js": [
-                "scripts/content-script.js"
-            ],
             "matches": [
-                "https://developer.chrome.com/docs/extensions/*",
-                "https://developer.chrome.com/docs/webstore/*"
+                "*://*/*"
+            ],
+            "js": [
+                "./scripts/content-script.js"
             ]
         }
     ],
