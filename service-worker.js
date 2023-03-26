@@ -3,7 +3,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     flip_user_status(true, request.payload)
       .then((res) => sendResponse(res))
       .catch((err) => console.log(err));
-
     return true;
   } else if (request.message === "logout") {
     flip_user_status(false, null)
@@ -20,7 +19,10 @@ async function flip_user_status(signIn, user_info) {
         "https://apitest.boomconcole.com/api/auth/login",
         {
           method: "POST",
-          body: user_info,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user_info),
         }
       );
       console.log(res);
@@ -51,31 +53,40 @@ async function flip_user_status(signIn, user_info) {
 
           if (response.userStatus === undefined) resolve("fail");
 
-          fetch("http://localhost:3000/logout", {
-            method: "GET",
-            headers: {
-              Authorization:
-                "Basic " +
-                btoa(
-                  `${response.user_info?.email}:${response.user_info?.pass}`
-                ),
-            },
-          })
-            .then((res) => {
-              console.log(res);
-              if (res.status !== 200) resolve("fail");
+          chrome.storage.local.set(
+            { userStatus: signIn, user_info: {} },
+            function (response) {
+              if (chrome.runtime.lastError) resolve("fail");
 
-              chrome.storage.local.set(
-                { userStatus: signIn, user_info: {} },
-                function (response) {
-                  if (chrome.runtime.lastError) resolve("fail");
+              if (is_user_signed_in() == signIn) resolve("success");
+            }
+          );
 
-                  user_signed_in = signIn;
-                  resolve("success");
-                }
-              );
-            })
-            .catch((err) => console.log(err));
+          // fetch("http://localhost:3000/logout", {
+          //   method: "GET",
+          //   headers: {
+          //     Authorization:
+          //       "Basic " +
+          //       btoa(
+          //         `${response.user_info?.email}:${response.user_info?.pass}`
+          //       ),
+          //   },
+          // })
+          //   .then((res) => {
+          //     console.log(res);
+          //     if (res.status !== 200) resolve("fail");
+
+          //     chrome.storage.local.set(
+          //       { userStatus: signIn, user_info: {} },
+          //       function (response) {
+          //         if (chrome.runtime.lastError) resolve("fail");
+
+          //         user_signed_in = signIn;
+          //         resolve("success");
+          //       }
+          //     );
+          //   })
+          //   .catch((err) => console.log(err));
         }
       );
     });
