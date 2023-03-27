@@ -25,7 +25,7 @@ async function flip_user_status(signIn, user_info) {
           body: JSON.stringify(user_info),
         }
       );
-      console.log(res);
+
       return await new Promise((resolve) => {
         if (res.status !== 200) resolve("fail");
 
@@ -34,7 +34,7 @@ async function flip_user_status(signIn, user_info) {
           function (response) {
             if (chrome.runtime.lastError) resolve("fail");
 
-            user_signed_in = signIn;
+            // is_user_signed_in = signIn;
             resolve("success");
           }
         );
@@ -44,49 +44,26 @@ async function flip_user_status(signIn, user_info) {
     }
   } else if (!signIn) {
     // fetch the localhost:3000/logout route
+    console.log(1);
     return new Promise((resolve) => {
+
       chrome.storage.local.get(
         ["userStatus", "user_info"],
         function (response) {
-          console.log(response);
+         
           if (chrome.runtime.lastError) resolve("fail");
 
           if (response.userStatus === undefined) resolve("fail");
 
           chrome.storage.local.set(
             { userStatus: signIn, user_info: {} },
-            function (response) {
+            function () {
+              console.log(is_user_signed_in());
               if (chrome.runtime.lastError) resolve("fail");
-
               if (is_user_signed_in() == signIn) resolve("success");
             }
           );
 
-          // fetch("http://localhost:3000/logout", {
-          //   method: "GET",
-          //   headers: {
-          //     Authorization:
-          //       "Basic " +
-          //       btoa(
-          //         `${response.user_info?.email}:${response.user_info?.pass}`
-          //       ),
-          //   },
-          // })
-          //   .then((res) => {
-          //     console.log(res);
-          //     if (res.status !== 200) resolve("fail");
-
-          //     chrome.storage.local.set(
-          //       { userStatus: signIn, user_info: {} },
-          //       function (response) {
-          //         if (chrome.runtime.lastError) resolve("fail");
-
-          //         user_signed_in = signIn;
-          //         resolve("success");
-          //       }
-          //     );
-          //   })
-          //   .catch((err) => console.log(err));
         }
       );
     });
@@ -118,34 +95,21 @@ function is_user_signed_in() {
   });
 }
 
-chrome.browserAction?.onClicked.addListener(function () {
-  console.log("browser Action clicked...");
-  // is_user_signed_in()
-  //     .then(res => {
-  //         if (res.userStatus) {
-  //             if (return_session) {
-  //                 chrome.windows.create({
-  //                     url: './popup-welcome-back.html',
-  //                     width: 300,
-  //                     height: 600,
-  //                     focused: true
-  //                 }, function () { return_session = false });
-  //             } else {
-  //                 chrome.windows.create({
-  //                     url: './popup-sign-out.html',
-  //                     width: 300,
-  //                     height: 600,
-  //                     focused: true
-  //                 });
-  //             }
-  //         } else {
-  //             chrome.windows.create({
-  //                 url: './popup-sign-in.html',
-  //                 width: 300,
-  //                 height: 600,
-  //                 focused: true
-  //             });
-  //         }
-  //     })
-  //     .catch(err => console.log(err));
+chrome.action.onClicked.addListener((tab) => {
+  console.log(tab);
+  is_user_signed_in()
+    .then((res) => {
+      console.log(res);
+      if (res.userStatus) {
+        chrome.action.setPopup({
+          tabId: tab.tabId,
+          popup: "./popup/popup-welcome.html",
+        });
+      } else {
+        chrome.action.setPopup({
+          popup: "./popup/popup-login.html",
+        });
+      }
+    })
+    .catch((err) => console.log(err));
 });
