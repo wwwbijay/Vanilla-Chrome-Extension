@@ -9,8 +9,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .then((res) => sendResponse(res))
       .catch((err) => console.log(err));
     return true;
+  } else if (request.message === "screenshot") {
+    sendResponse(screenCapture());
   }
+  return true;
 });
+
+async function screenCapture() {
+  chrome.tabs.captureVisibleTab(function (screenshotUrl) {
+    console.log(screenshotUrl);
+    return screenshotUrl;
+  });
+}
 
 async function flip_user_status(signIn, user_info) {
   if (signIn) {
@@ -46,11 +56,9 @@ async function flip_user_status(signIn, user_info) {
     // fetch the localhost:3000/logout route
     console.log(1);
     return new Promise((resolve) => {
-
       chrome.storage.local.get(
         ["userStatus", "user_info"],
         function (response) {
-         
           if (chrome.runtime.lastError) resolve("fail");
 
           if (response.userStatus === undefined) resolve("fail");
@@ -63,7 +71,6 @@ async function flip_user_status(signIn, user_info) {
               if (is_user_signed_in() == signIn) resolve("success");
             }
           );
-
         }
       );
     });

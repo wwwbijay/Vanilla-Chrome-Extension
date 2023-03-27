@@ -12,28 +12,23 @@ let save_btn = document.getElementById("save_button");
 save_btn.addEventListener(
   "click",
   (evt) => {
-    startCapture();
-    loader = true;
-    close_btn.classList.toggle("hide");
-    save_btn.classList.toggle("hide");
+    chrome.runtime.sendMessage({ message: "screenshot" }, function (response) {
+      console.log(response);
+    });
   },
   false
 );
 
 async function startCapture() {
-  chrome.runtime.sendMessage({ message: "screenshot" }, function (response) {
-    console.log(response);
-  });
-
-  chrome.desktopCapture.chooseDesktopMedia(
-    ["screen", "window", "tab"],
-    tab,
-    (streamId) => {
-      //check whether the user canceled the request or not
-      if (streamId && streamId.length) {
-      }
-    }
-  );
+  // chrome.desktopCapture.chooseDesktopMedia(
+  //   ["screen", "window", "tab"],
+  //   tab,
+  //   (streamId) => {
+  //     //check whether the user canceled the request or not
+  //     if (streamId && streamId.length) {
+  //     }
+  //   }
+  // );
 }
 
 is_user_signed_in()
